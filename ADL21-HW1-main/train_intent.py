@@ -41,7 +41,7 @@ def main(args):
 
     epoch_pbar = trange(args.num_epoch, desc="Epoch")
     for epoch in epoch_pbar:
-        # TODO: Training loop - iterate over train dataloader and update model weights
+        # TODO: Training loop - iterate over train dataloader and update model weights 
         # TODO: Evaluation loop - calculate accuracy and save model weights
         pass
 

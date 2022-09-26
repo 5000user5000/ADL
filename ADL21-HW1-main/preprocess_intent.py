@@ -23,26 +23,26 @@ logging.basicConfig(
 def build_vocab(
     words: Counter, vocab_size: int, output_dir: Path, glove_path: Path
 ) -> None:
-    common_words = {w for w, _ in words.most_common(vocab_size)}
+    common_words = {w for w, _ in words.most_common(vocab_size)} #most_common眾數,抓出現頻率高的
     vocab = Vocab(common_words)
-    vocab_path = output_dir / "vocab.pkl"
+    vocab_path = output_dir / "vocab.pkl" #vocal資料丟這
     with open(vocab_path, "wb") as f:
         pickle.dump(vocab, f)
     logging.info(f"Vocab saved at {str(vocab_path.resolve())}")
 
-    glove: Dict[str, List[float]] = {}
+    glove: Dict[str, List[float]] = {} #宣告 glove 類型
     logging.info(f"Loading glove: {str(glove_path.resolve())}")
     with open(glove_path) as fp:
         row1 = fp.readline()
         # if the first row is not header
-        if not re.match("^[0-9]+ [0-9]+$", row1):
+        if not re.match("^[0-9]+ [0-9]+$", row1): #正則表達式
             # seek to 0
             fp.seek(0)
         # otherwise ignore the header
 
         for i, line in tqdm(enumerate(fp)):
-            cols = line.rstrip().split(" ")
-            word = cols[0]
+            cols = line.rstrip().split(" ") #去除句尾空格,並以空格來分拆
+            word = cols[0] #所以第一個字是 數量? 應該是str
             vector = [float(v) for v in cols[1:]]
 
             # skip word not in words if words are provided
@@ -54,12 +54,12 @@ def build_vocab(
     assert all(len(v) == glove_dim for v in glove.values())
     assert len(glove) <= vocab_size
 
-    num_matched = sum([token in glove for token in vocab.tokens])
+    num_matched = sum([token in glove for token in vocab.tokens]) #這才是數量
     logging.info(
         f"Token covered: {num_matched} / {len(vocab.tokens)} = {num_matched / len(vocab.tokens)}"
     )
     embeddings: List[List[float]] = [
-        glove.get(token, [random() * 2 - 1 for _ in range(glove_dim)])
+        glove.get(token, [random() * 2 - 1 for _ in range(glove_dim)])   #所有的token編碼,如果本來沒有,就使用隨機的
         for token in vocab.tokens
     ]
     embeddings = torch.tensor(embeddings)
@@ -70,29 +70,29 @@ def build_vocab(
 
 
 def main(args):
-    seed(args.rand_seed)
+    seed(args.rand_seed) #亂數種子
 
     intents = set()
     words = Counter()
-    for split in ["train", "eval"]:
+    for split in ["train", "eval"]: #訓練和評估各跑一次
         dataset_path = args.data_dir / f"{split}.json"
         dataset = json.loads(dataset_path.read_text())
-        logging.info(f"Dataset loaded at {str(dataset_path.resolve())}")
+        logging.info(f"Dataset loaded at {str(dataset_path.resolve())}") #顯示資料以載入哪
 
-        intents.update({instance["intent"] for instance in dataset})
+        intents.update({instance["intent"] for instance in dataset}) #抓dataset裡是intent的部分資料,加入intent中,且避免重複
         words.update(
-            [token for instance in dataset for token in instance["text"].split()]
+            [token for instance in dataset for token in instance["text"].split()] #抓dataset->instance["text"]->token (這裡是spilt,所以句子會被拆成1個個voc) , jimmy不推 因為可讀性不佳
         )
 
-    intent2idx = {tag: i for i, tag in enumerate(intents)}
-    intent_tag_path = args.output_dir / "intent2idx.json"
-    intent_tag_path.write_text(json.dumps(intent2idx, indent=2))
+    intent2idx = {tag: i for i, tag in enumerate(intents)} #dict,貼標籤
+    intent_tag_path = args.output_dir / "intent2idx.json"  #檔案放在預設或是參數給的檔案底下的json
+    intent_tag_path.write_text(json.dumps(intent2idx, indent=2))  #寫入
     logging.info(f"Intent 2 index saved at {str(intent_tag_path.resolve())}")
 
-    build_vocab(words, args.vocab_size, args.output_dir, args.glove_path)
+    build_vocab(words, args.vocab_size, args.output_dir, args.glove_path) #vocab_size一次預設丟10000
 
 
-def parse_args() -> Namespace:
+def parse_args() -> Namespace:  #一些設定
     parser = ArgumentParser()
     parser.add_argument(
         "--data_dir",
@@ -124,6 +124,6 @@ def parse_args() -> Namespace:
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    args = parse_args() #python preprocess_intent.py arg1 arg2...,後面添加參數
     args.output_dir.mkdir(parents=True, exist_ok=True)
     main(args)

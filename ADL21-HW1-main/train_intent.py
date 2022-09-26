@@ -11,9 +11,17 @@ from torch.utils.data import DataLoader
 from dataset import SeqClsDataset
 from utils import Vocab
 
+from model import SeqClassifier # model.py
+import torch.optim as optim
+
+
+
+
 TRAIN = "train"
 DEV = "eval"
-SPLITS = [TRAIN, DEV]
+SPLITS = [TRAIN, DEV] #拆分成訓練及驗證data
+
+
 
 
 def main(args):
@@ -30,18 +38,20 @@ def main(args):
         for split, split_data in data.items()
     }
     # TODO: crecate DataLoader for train / dev datasets
-    dataloader = DataLoader(dataset=datasets, batch_size=4, shuffle=True)
+    dataloader_train = DataLoader(dataset=datasets[TRAIN], batch_size=4, shuffle=True)
+    dataloader_dev = DataLoader(dataset=datasets[DEV], batch_size=4, shuffle=True)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
     # TODO: init model and move model to target device(cpu / gpu)
-    model = None
+    model = SeqClassifier(torch.nn.Module)
 
     # TODO: init optimizer
-    optimizer = None
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
     epoch_pbar = trange(args.num_epoch, desc="Epoch")
     for epoch in epoch_pbar:
         # TODO: Training loop - iterate over train dataloader and update model weights 
+        
         # TODO: Evaluation loop - calculate accuracy and save model weights
         pass
 

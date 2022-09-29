@@ -29,32 +29,70 @@ def main(args):
         vocab: Vocab = pickle.load(f)
 
     intent_idx_path = args.cache_dir / "intent2idx.json"
-    intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text())
+    intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text()) #所有的intent和其編號的dict
 
-    data_paths = {split: args.data_dir / f"{split}.json" for split in SPLITS}
+    data_paths = {split: args.data_dir / f"{split}.json" for split in SPLITS} #產生 訓練和驗證的資料路徑
     data = {split: json.loads(path.read_text()) for split, path in data_paths.items()}
     datasets: Dict[str, SeqClsDataset] = {
         split: SeqClsDataset(split_data, vocab, intent2idx, args.max_len)
         for split, split_data in data.items()
     }
-    # TODO: crecate DataLoader for train / dev datasets
-    dataloader_train = DataLoader(dataset=datasets[TRAIN], batch_size=4, shuffle=True)
-    dataloader_dev = DataLoader(dataset=datasets[DEV], batch_size=4, shuffle=True)
+    # TODO: create DataLoader for train / dev datasets
+    #dataloader = {DataLoader(dataset=datasets[split], batch_size=4, shuffle=True) for split in SPLITS}
+    dataloader_train = DataLoader(dataset=datasets["train"], batch_size=4, shuffle=True)
+    dataloader_eval = DataLoader(dataset=datasets["eval"], batch_size=4, shuffle=True)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
     # TODO: init model and move model to target device(cpu / gpu)
-    model = SeqClassifier(torch.nn.Module)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = SeqClassifier(embeddings,3,3,0.2,True,args.max_len).to(device) #param我先隨便設定
 
     # TODO: init optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    loss_fn = torch.nn.CrossEntropyLoss()
 
-    epoch_pbar = trange(args.num_epoch, desc="Epoch")
+    epoch_pbar = trange(args.num_epoch, desc="Epoch") #進度條
+
+    
+
+
     for epoch in epoch_pbar:
-        # TODO: Training loop - iterate over train dataloader and update model weights 
-        
-        # TODO: Evaluation loop - calculate accuracy and save model weights
-        pass
+        print(f"epoch1 = {epoch}")
+        false_times = 0
+        true_times = 0
+        # TODO: Training loop - iterate over train dataloader and update model weights    
+        for input,target in dataloader_train:  #訓練集
+            input = input.to(device)
+            target = target.to(device)
 
+            output = model(input)
+            
+            loss = loss_fn(output,target)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            if(input != output):
+                false_times+=1
+            else:
+                true_times+=1
+        print(f"正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+
+
+    
+    for epoch in epoch_pbar:
+        print(f"epoch2 = {epoch}")
+        # TODO: Evaluation loop - calculate accuracy and save model weights
+        for input,target in dataloader_eval:
+            input = input.to(device)
+            target = target.to(device)
+            output = model(input)
+            #loss = loss_fn(output,target)
+        
+        if(input != output):
+                false_times+=1
+        else:
+                true_times+=1
+        print(f"正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
     # TODO: Inference on test set
 
 

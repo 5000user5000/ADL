@@ -19,7 +19,7 @@ import torch.optim as optim
 
 TRAIN = "train"
 DEV = "eval"
-SPLITS = [TRAIN, DEV] #拆分成訓練及驗證data
+SPLITS = [TRAIN, DEV]  #拆分成訓練及驗證data
 
 
 

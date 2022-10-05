@@ -3,6 +3,7 @@ from typing import Dict
 import torch
 from torch.nn import Embedding
 import torch.nn as nn
+import numpy as np
 
 
 
@@ -17,15 +18,21 @@ class SeqClassifier(torch.nn.Module):
         num_class: int,
     ) -> None:
         super(SeqClassifier, self).__init__()
-        self.embed = Embedding.from_pretrained(embeddings, freeze=False) 
-        print(self.embed)
+        
+        self.embedding_pretrained = embeddings
+        self.embed = self.embedding_pretrained.size(1)\
+            if self.embedding_pretrained is not None else 300           # 字向量维度
+        #隨便設定
+        self.hidden_size = 128
+        self.num_layers = 2
+        self.dropout = 0.5
+        self.num_classes = 150
+        #print(self.embed)
+        
         # TODO: model architecture
-        #self.conv1 = nn.Conv2d(3, 6, 5)
-        #self.pool = nn.MaxPool2d(2, 2)
-        #self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(3*4, 120)  #一個資料裡面有3項目*4 batch
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.lstm = nn.LSTM(self.embed, hidden_size, num_layers,
+                            bidirectional=True, batch_first=True, dropout=dropout) #除了self.embed之外,其他param的self都拔掉
+        self.fc = nn.Linear(hidden_size * 2, num_class)
 
     @property
     def encoder_output_size(self) -> int:
@@ -34,9 +41,9 @@ class SeqClassifier(torch.nn.Module):
 
     def forward(self, batch) -> Dict[str, torch.Tensor]:
         # TODO: implement model forward
-        x = nn.relu(self.fc1(batch))
-        x = nn.relu(self.fc2(x))
-        x = nn.Sigmoid(self.fc3(x))
-
-        return x
+        x, _ = x
+        out = self.embedding(x)  # [batch_size, seq_len, embeding]=[128, 32, 300]
+        out, _ = self.lstm(out)
+        out = self.fc(out[:, -1, :])  # 句子最後时刻的 hidden state
+        return out
         raise NotImplementedError

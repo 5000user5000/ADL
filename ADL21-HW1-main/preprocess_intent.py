@@ -23,11 +23,11 @@ logging.basicConfig(
 def build_vocab(
     words: Counter, vocab_size: int, output_dir: Path, glove_path: Path
 ) -> None:
-    common_words = {w for w, _ in words.most_common(vocab_size)} #most_common眾數,抓出現頻率高的
-    vocab = Vocab(common_words)
+    common_words = {w for w, _ in words.most_common(vocab_size)} #most_common眾數,抓出現頻率高的,抓vocab_size個
+    vocab = Vocab(common_words) #把這些變成vocab
     vocab_path = output_dir / "vocab.pkl" #vocal資料丟這
     with open(vocab_path, "wb") as f:
-        pickle.dump(vocab, f)
+        pickle.dump(vocab, f)  #把vocab 複製到path的檔案中
     logging.info(f"Vocab saved at {str(vocab_path.resolve())}")
 
     glove: Dict[str, List[float]] = {} #宣告 glove 類型
@@ -59,10 +59,10 @@ def build_vocab(
         f"Token covered: {num_matched} / {len(vocab.tokens)} = {num_matched / len(vocab.tokens)}"
     )
     embeddings: List[List[float]] = [
-        glove.get(token, [random() * 2 - 1 for _ in range(glove_dim)])   #所有的token編碼,如果本來沒有,就使用隨機的
+        glove.get(token, [random() * 2 - 1 for _ in range(glove_dim)])   #所有的token編碼,如果本來沒有,就使用隨機的,應該是權重
         for token in vocab.tokens
     ]
-    embeddings = torch.tensor(embeddings)
+    embeddings = torch.tensor(embeddings) #有存成張量了,之後不用轉換
     embedding_path = output_dir / "embeddings.pt"
     torch.save(embeddings, str(embedding_path))
     logging.info(f"Embedding shape: {embeddings.shape}")

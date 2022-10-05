@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 from utils import Vocab
 
 
+
 class SeqClsDataset(Dataset):
     def __init__(
         self,
@@ -26,9 +27,13 @@ class SeqClsDataset(Dataset):
         instance = self.data[index]
         return instance
 
+    
+
     @property
     def num_classes(self) -> int:
         return len(self.label_mapping)
+
+    
 
     def collate_fn(self, samples: List[Dict]) -> Dict:
         # TODO: implement collate_fn

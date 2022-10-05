@@ -2,6 +2,7 @@ import json
 import pickle
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+import time
 from typing import Dict
 
 import torch
@@ -9,7 +10,7 @@ from tqdm import trange
 from torch.utils.data import DataLoader
 
 from dataset import SeqClsDataset
-from utils import Vocab
+from utils import Vocab,build_iterator
 
 from model import SeqClassifier # model.py
 import torch.optim as optim
@@ -32,7 +33,9 @@ def main(args):
     intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text()) #所有的intent和其編號的dict
 
     data_paths = {split: args.data_dir / f"{split}.json" for split in SPLITS} #產生 訓練和驗證的資料路徑
+    #print(data_paths)
     data = {split: json.loads(path.read_text()) for split, path in data_paths.items()}
+    #print(data)
     datasets: Dict[str, SeqClsDataset] = {
         split: SeqClsDataset(split_data, vocab, intent2idx, args.max_len)
         for split, split_data in data.items()
@@ -42,11 +45,15 @@ def main(args):
     dataloader_train = DataLoader(dataset=datasets["train"], batch_size=4, shuffle=True)
     dataloader_eval = DataLoader(dataset=datasets["eval"], batch_size=4, shuffle=True)
 
+    
+
+
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
     # TODO: init model and move model to target device(cpu / gpu)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = SeqClassifier(embeddings,3,3,0.2,True,args.max_len).to(device) #param我先隨便設定
-
+    model = SeqClassifier(embeddings,128,2,0.5,True,args.max_len).to(device) #param我先隨便設定
+    
+    train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
     # TODO: init optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     loss_fn = torch.nn.CrossEntropyLoss()
@@ -57,11 +64,12 @@ def main(args):
 
 
     for epoch in epoch_pbar:
-        print(f"epoch1 = {epoch}")
+        print('Epoch [{}/{}]'.format(epoch + 1, epoch_pbar))
         false_times = 0
         true_times = 0
         # TODO: Training loop - iterate over train dataloader and update model weights    
-        for input,target in dataloader_train:  #訓練集
+        print(dataloader_train)
+        for i, (input, target) in enumerate(train_iter):  #訓練集 train_iter
             input = input.to(device)
             target = target.to(device)
 
@@ -75,14 +83,17 @@ def main(args):
                 false_times+=1
             else:
                 true_times+=1
-        print(f"正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+
+            if(i%100==0): #每100次輸出結果看看
+                print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+        print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
 
 
     
     for epoch in epoch_pbar:
         print(f"epoch2 = {epoch}")
         # TODO: Evaluation loop - calculate accuracy and save model weights
-        for input,target in dataloader_eval:
+        for i, (input, target) in  enumerate(dataloader_eval):
             input = input.to(device)
             target = target.to(device)
             output = model(input)
@@ -93,8 +104,8 @@ def main(args):
         else:
                 true_times+=1
         print(f"正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
-    # TODO: Inference on test set
-
+    # TODO: Inference on test set 作測驗用
+    
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()

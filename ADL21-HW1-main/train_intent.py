@@ -2,7 +2,6 @@ import json
 import pickle
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-import time
 from typing import Dict
 
 import torch
@@ -10,7 +9,7 @@ from tqdm import trange
 from torch.utils.data import DataLoader
 
 from dataset import SeqClsDataset
-from utils import Vocab,build_iterator
+from utils import Vocab
 
 from model import SeqClassifier # model.py
 import torch.optim as optim
@@ -42,8 +41,8 @@ def main(args):
     }
     # TODO: create DataLoader for train / dev datasets
     #dataloader = {DataLoader(dataset=datasets[split], batch_size=4, shuffle=True) for split in SPLITS}
-    dataloader_train = DataLoader(dataset=datasets["train"], batch_size=4, shuffle=True)
-    dataloader_eval = DataLoader(dataset=datasets["eval"], batch_size=4, shuffle=True)
+    dataloader_train = DataLoader(dataset=datasets["train"], batch_size=args.batch_size ,shuffle=True,collate_fn=datasets["train"].collate_fn)
+    dataloader_eval = DataLoader(dataset=datasets["eval"], batch_size= args.batch_size, shuffle=True,collate_fn=datasets["eval"].collate_fn)
 
     
 
@@ -51,11 +50,11 @@ def main(args):
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
     # TODO: init model and move model to target device(cpu / gpu)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = SeqClassifier(embeddings,128,2,0.5,True,args.max_len).to(device) #param我先隨便設定
+    model = SeqClassifier(embeddings,args.hidden_size,args.num_layers,args.dropout,args.bidirectional,150).to(device) 
     
-    train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
+    #train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
     # TODO: init optimizer
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
     loss_fn = torch.nn.CrossEntropyLoss()
 
     epoch_pbar = trange(args.num_epoch, desc="Epoch") #進度條
@@ -69,13 +68,15 @@ def main(args):
         true_times = 0
         # TODO: Training loop - iterate over train dataloader and update model weights    
         print(dataloader_train)
-        for i, (input, target) in enumerate(train_iter):  #訓練集 train_iter
-            input = input.to(device)
-            target = target.to(device)
+        for num,data in enumerate(dataloader_train):  #訓練集 train_iter
+            print("label = ",data['label'])
+            print("input = ",data['input'])
+            input =  data['input'].to(device)
+            label = data['label'].to(device)
 
             output = model(input)
             
-            loss = loss_fn(output,target)
+            loss = loss_fn(output,label)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -91,7 +92,7 @@ def main(args):
 
     
     for epoch in epoch_pbar:
-        print(f"epoch2 = {epoch}")
+        #print(f"epoch2 = {epoch}")
         # TODO: Evaluation loop - calculate accuracy and save model weights
         for i, (input, target) in  enumerate(dataloader_eval):
             input = input.to(device)

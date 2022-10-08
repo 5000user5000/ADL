@@ -4,6 +4,8 @@ from torch.utils.data import Dataset
 
 from utils import Vocab
 
+import torch
+
 
 
 class SeqClsDataset(Dataset):
@@ -16,7 +18,7 @@ class SeqClsDataset(Dataset):
     ):
         self.data = data
         self.vocab = vocab
-        self.label_mapping = label_mapping
+        self.label_mapping = label_mapping #本身就是label2idx
         self._idx2label = {idx: intent for intent, idx in self.label_mapping.items()}
         self.max_len = max_len
 
@@ -37,7 +39,29 @@ class SeqClsDataset(Dataset):
 
     def collate_fn(self, samples: List[Dict]) -> Dict:
         # TODO: implement collate_fn
-        raise NotImplementedError
+        #batch label text id整理在一起
+        #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        label_list, text_list, id_list = [], [], []
+        for sample in samples:
+            label = self.label_mapping[sample['intent']]
+            label_list.append(label)
+            id_list.append(sample['id'])
+        text =  self.vocab.encode_batch([words for sample in samples for words in sample['text'].split() ])
+        processed_text = torch.tensor(text, dtype=torch.int64)
+        
+        #offsets.append(processed_text.size(0))
+
+        label_list = torch.tensor(label_list, dtype=torch.int64)
+        #offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
+
+        collate ={
+            "label":label_list,
+            "input":processed_text,
+            "id":id_list
+        }
+        
+        return collate #text_list.to(device), offsets.to(device)
+        
 
     def label2idx(self, label: str):
         return self.label_mapping[label]

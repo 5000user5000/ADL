@@ -42,8 +42,8 @@ def build_vocab(
 
         for i, line in tqdm(enumerate(fp)):
             cols = line.rstrip().split(" ") #去除句尾空格,並以空格來分拆
-            word = cols[0] #所以第一個字是 數量? 應該是str
-            vector = [float(v) for v in cols[1:]]
+            word = cols[0] #所以第一個字是 單字 應該是str
+            vector = [float(v) for v in cols[1:]] #後面是他的vec
 
             # skip word not in words if words are provided
             if word not in common_words:

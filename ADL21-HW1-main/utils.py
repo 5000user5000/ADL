@@ -44,6 +44,12 @@ def pad_to_len(seqs: List[List[int]], to_len: int, padding: int) -> List[List[in
     paddeds = [seq[:to_len] + [padding] * max(0, to_len - len(seq)) for seq in seqs]
     return paddeds
 
+#因為vocab的encoder似乎沒法用,只好自製
+def token_to_id(self, token: str) -> int:
+        return self.token2idx.get(token, self.unk_id)
+def encode(self, tokens: List[str]) -> List[int]:
+        return [self.token_to_id(token) for token in tokens]
+
 class DatasetIterater(object):
     def __init__(self, batches, batch_size, device):
         self.batch_size = batch_size
@@ -54,13 +60,14 @@ class DatasetIterater(object):
             self.residue = True
         self.index = 0
         self.device = device
+        
 
     def _to_tensor(self, datas):
-        x = torch.LongTensor([Vocab.encode(_['text']) for _ in datas]).to(self.device)
-        y = torch.LongTensor([_["intent"] for _ in datas]).to(self.device)
+        x = torch.LongTensor([ _['text'].split()  for _ in datas]).to(self.device)
+        y = torch.LongTensor([_['intent'] for _ in datas]).to(self.device)
 
         # pad前的长度(超过pad_size的设为pad_size)
-        seq_len = torch.LongTensor([_[2] for _ in datas]).to(self.device)
+        seq_len = torch.LongTensor([ len( _['text'].split() ) for _ in datas]).to(self.device)
         return (x, seq_len), y
 
     def __next__(self):

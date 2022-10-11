@@ -80,14 +80,21 @@ def main(args):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            #if(label != output):
-            #    false_times+=1
-            #else:
-            #    true_times+=1
+            
+            _, preds = torch.max(output, 1)
+            '''
+            for i in range(128):
+                if(label[i] != preds[i]):
+                    false_times+=1
+                else:
+                    true_times+=1
+                    '''
+            true_times  =  torch.sum(preds == label.data)
+            false_times = len(label)-true_times
             loss_record.append(loss)
             print(loss)
-            #if(i%100==0): #每100次輸出結果看看
-            #   print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+            
+            print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
         #print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
 
 

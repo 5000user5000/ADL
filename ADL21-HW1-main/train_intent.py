@@ -54,7 +54,8 @@ def main(args):
     
     #train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
     # TODO: init optimizer
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
+    #optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
+    optimizer =optim.Adam(model.parameters(), lr=args.lr)
     loss_fn = torch.nn.CrossEntropyLoss()
 
     epoch_pbar = trange(args.num_epoch, desc="Epoch") #進度條

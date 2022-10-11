@@ -47,7 +47,6 @@ class SeqClassifier(torch.nn.Module):
     def forward(self, batch) -> Dict[str, torch.Tensor]:
         # TODO: implement model forward
         #x, _ = batch
-        batch_size = 128 #暫時這樣
         out = self.embed(batch.t())  # [batch_size, seq_len, embeding]=[128, 32, 300],t()是轉置
         out, _ = self.lstm(out)
         ht = out[-1]  # 句子最後时刻的 hidden state  out[:, -1, :]

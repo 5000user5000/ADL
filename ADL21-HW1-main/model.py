@@ -3,7 +3,7 @@ from typing import Dict
 import torch
 from torch.nn import Embedding
 import torch.nn as nn
-import numpy as np
+import torch.nn.functional as F
 
 
 
@@ -35,6 +35,11 @@ class SeqClassifier(torch.nn.Module):
         self.lstm = nn.LSTM(self.embedding_dim, hidden_size=self.hidden_size, num_layers=self.num_layers,
                             bidirectional=self.bidirectional, batch_first=True, dropout=dropout) #除了self.embed之外,其他param的self都拔掉
         #self.fc = nn.Linear(hidden_size * 2, num_class)
+        
+        self.tanh1 = nn.Tanh()
+        self.w = nn.Parameter(torch.zeros(hidden_size * 2))
+        self.tanh2 = nn.Tanh()
+        self.fc1 = nn.Linear(hidden_size * 2, 1024)
         # Fully-connected layer，把 hidden state 線性轉換成 output
         self.hidden2out = nn.Linear(self.hidden_size*2, self.num_classes) #這個應該是最後一層,輸出每一種可能的機率
 
@@ -47,11 +52,18 @@ class SeqClassifier(torch.nn.Module):
     def forward(self, batch) -> Dict[str, torch.Tensor]:
         # TODO: implement model forward
         #x, _ = batch
-        out = self.embed(batch.t())  # [batch_size, seq_len, embeding]=[128, 32, 300],t()是轉置
-        out, _ = self.lstm(out)
-        ht = out[-1]  # 句子最後时刻的 hidden state  out[:, -1, :]
+        out = self.embed(batch)  # [batch_size, seq_len, embeding]=[128, 32, 300],t()是轉置 (之後去掉)    
+        H, _ = self.lstm(out)
+        M = self.tanh1(H)
+        alpha = F.softmax(torch.matmul(M, self.w), dim=1).unsqueeze(-1)
+        out = H * alpha 
+        out = torch.sum(out, 1)
+        out = F.relu(out)
+        out = self.fc1(out)
+        out = self.hidden2out(out)
+        #ht = out[-1]  # 句子最後时刻的 hidden state  out[:, -1, :]
         #out = nn.functional.softmax(out,self.num_classes)
-        out = self.hidden2out(ht)
+        #out = self.hidden2out(ht)
         
 
         return out

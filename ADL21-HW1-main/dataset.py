@@ -46,13 +46,15 @@ class SeqClsDataset(Dataset):
             label = self.label_mapping[sample['intent']]
             label_list.append(label)
             id_list.append(sample['id'])
-        text =  self.vocab.encode_batch([words for sample in samples for words in sample['text'].split() ])
-        processed_text = torch.tensor(text, dtype=torch.int64)
+            text_list.append([words  for words in sample['text'].split()]) #List[List[str]]
         
-        #offsets.append(processed_text.size(0))
+        text =  self.vocab.encode_batch(text_list) 
+        processed_text = torch.tensor(text, dtype=torch.int64) 
+        
+        
 
         label_list = torch.tensor(label_list, dtype=torch.int64)
-        #offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
+        
 
         collate ={
             "label":label_list,

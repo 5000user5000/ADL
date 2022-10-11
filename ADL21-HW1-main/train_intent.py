@@ -60,17 +60,17 @@ def main(args):
     epoch_pbar = trange(args.num_epoch, desc="Epoch") #進度條
 
     
-
+    loss_record = []
 
     for epoch in epoch_pbar:
         print('Epoch [{}/{}]'.format(epoch + 1, epoch_pbar))
         false_times = 0
         true_times = 0
         # TODO: Training loop - iterate over train dataloader and update model weights    
-        print(dataloader_train)
+        #print(dataloader_train)
         for num,data in enumerate(dataloader_train):  #訓練集 train_iter
-            print("label = ",data['label'])
-            print("input = ",data['input'])
+            #print("label = ",data['label'])
+            #print("input = ",data['input'])
             input =  data['input'].to(device)
             label = data['label'].to(device)
 
@@ -80,14 +80,15 @@ def main(args):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            if(input != output):
-                false_times+=1
-            else:
-                true_times+=1
-
-            if(i%100==0): #每100次輸出結果看看
-                print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
-        print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+            #if(label != output):
+            #    false_times+=1
+            #else:
+            #    true_times+=1
+            loss_record.append(loss)
+            print(loss)
+            #if(i%100==0): #每100次輸出結果看看
+            #   print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+        #print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
 
 
     

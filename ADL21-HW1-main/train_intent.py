@@ -92,7 +92,7 @@ def main(args):
             true_times  =  torch.sum(preds == label.data)
             false_times = len(label)-true_times
             loss_record.append(loss)
-            print(loss)
+            print(loss) 
             
             print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
         #print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")

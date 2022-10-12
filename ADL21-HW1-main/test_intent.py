@@ -20,6 +20,7 @@ def main(args):
     intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text())
 
     data = json.loads(args.test_file.read_text())
+    idx2label = {idx: intent for intent, idx in intent2idx.items()}
     dataset = SeqClsDataset(data, vocab, intent2idx, args.max_len)
     # TODO: create DataLoader for test dataset
     dataloader_test = DataLoader(dataset=dataset, batch_size=args.batch_size ,shuffle=True,collate_fn=dataset.collate_fn_test)
@@ -36,7 +37,7 @@ def main(args):
     )
     model.eval()
 
-    ckpt = torch.load(args.ckpt_path)
+    ckpt = torch.load(args.ckpt_path,map_location='cpu')
     # load weights into model
     model.load_state_dict(ckpt)
 
@@ -47,7 +48,8 @@ def main(args):
             input =  data['input'].to(device)
             output = model(input)
             _, preds = torch.max(output, 1)
-            result.append([data['id'],preds])
+            for i in range(len(preds)): #batch_size
+                result.append([data['id'][i],idx2label[preds[i].item()] ])
 
         
 
@@ -58,8 +60,8 @@ def main(args):
         # 寫入第一列資料
         writer.writerow(['id', 'intent'])
         # 寫入剩下資料
-        for i,(id,label) in result:
-            writer.writerow([id, label])
+        for _id,label in result:
+            writer.writerow([_id, label])
 
 
 def parse_args() -> Namespace:
@@ -81,7 +83,7 @@ def parse_args() -> Namespace:
         "--ckpt_path",
         type=Path,
         help="Path to model checkpoint.",
-        default="./ckpt/intent/weight.pt",
+        default="./ckpt/intent/model_state_dict.pt",
         #required=True
     )
     parser.add_argument("--pred_file", type=Path, default="pred.intent.csv")

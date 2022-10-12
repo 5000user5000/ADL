@@ -106,6 +106,8 @@ def main(args):
     #驗證
     # TODO: Training loop - iterate over train dataloader and update model weights    
     #print(dataloader_train)
+    total_true = 0
+    total_false = 0
     for num,data in enumerate(dataloader_eval):  #訓練集 train_iter
         #print("label = ",data['label'])
         print("input = ",data['input'])
@@ -115,11 +117,14 @@ def main(args):
         output = model(input)
         _, preds = torch.max(output, 1)
         true_times  =  torch.sum(preds == label.data)
+        total_true += true_times
         false_times = len(label)-true_times
+        total_false += false_times
         loss_record.append(loss)
-        print(loss) 
-            
-        print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+        print(loss)    
+        print(f"eval 正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+    print(f"eval final正確率 = {total_true}/{total_true+total_false} = {total_true/(total_true+total_false)}")
+
     # TODO: Inference on test set 作測驗用
     print("before save")
     FILE = 'model_state_dict.pt'

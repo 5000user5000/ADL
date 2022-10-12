@@ -117,8 +117,8 @@ def main(args):
             
         print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
     # TODO: Inference on test set 作測驗用
-    
-    torch.save(model.state_dict(),args.ckpt_dir) #儲存模型
+    FILE = 'model_state_dict.pt'
+    torch.save(model.state_dict(),FILE) #儲存模型,不知為何args.ckpt_dir不行,先生出之後在手動挪
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()

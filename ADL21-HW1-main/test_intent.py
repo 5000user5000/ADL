@@ -3,12 +3,13 @@ import pickle
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Dict
-
+from torch.utils.data import DataLoader
 import torch
 
 from dataset import SeqClsDataset
 from model import SeqClassifier
 from utils import Vocab
+import csv
 
 
 def main(args):
@@ -20,7 +21,8 @@ def main(args):
 
     data = json.loads(args.test_file.read_text())
     dataset = SeqClsDataset(data, vocab, intent2idx, args.max_len)
-    # TODO: crecate DataLoader for test dataset
+    # TODO: create DataLoader for test dataset
+    dataloader_test = DataLoader(dataset=dataset, batch_size=args.batch_size ,shuffle=True,collate_fn=dataset.collate_fn_test)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
 
@@ -36,10 +38,28 @@ def main(args):
 
     ckpt = torch.load(args.ckpt_path)
     # load weights into model
+    model.load_state_dict(ckpt)
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # TODO: predict dataset
+    result = []
+    for num,data in enumerate(dataloader_test):  
+            input =  data['input'].to(device)
+            output = model(input)
+            _, preds = torch.max(output, 1)
+            result.append([data['id'],preds])
+
+        
 
     # TODO: write prediction to file (args.pred_file)
+    with open('intent_output.csv', 'w', newline='') as csvfile:
+        # 建立 CSV 檔寫入器
+        writer = csv.writer(csvfile)
+        # 寫入第一列資料
+        writer.writerow(['id', 'intent'])
+        # 寫入剩下資料
+        for i,(id,label) in result:
+            writer.writerow([id, label])
 
 
 def parse_args() -> Namespace:
@@ -48,7 +68,8 @@ def parse_args() -> Namespace:
         "--test_file",
         type=Path,
         help="Path to the test file.",
-        required=True
+        default="./data/intent/test.json",
+        #required=True
     )
     parser.add_argument(
         "--cache_dir",
@@ -60,7 +81,8 @@ def parse_args() -> Namespace:
         "--ckpt_path",
         type=Path,
         help="Path to model checkpoint.",
-        required=True
+        default="./ckpt/intent/",
+        #required=True
     )
     parser.add_argument("--pred_file", type=Path, default="pred.intent.csv")
 

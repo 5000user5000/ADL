@@ -99,23 +99,32 @@ def main(args):
         #print(f"final正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
 
 
-    
+    #驗證
     for epoch in epoch_pbar:
         #print(f"epoch2 = {epoch}")
         # TODO: Evaluation loop - calculate accuracy and save model weights
-        for i, (input, target) in  enumerate(dataloader_eval):
-            input = input.to(device)
-            target = target.to(device)
+        print('eval Epoch [{}/{}]'.format(epoch + 1, epoch_pbar))
+        false_times = 0
+        true_times = 0
+        # TODO: Training loop - iterate over train dataloader and update model weights    
+        #print(dataloader_train)
+        for num,data in enumerate(dataloader_eval):  #訓練集 train_iter
+            #print("label = ",data['label'])
+            #print("input = ",data['input'])
+            input =  data['input'].to(device)
+            label = data['label'].to(device)
+
             output = model(input)
-            #loss = loss_fn(output,target)
-        
-        if(input != output):
-                false_times+=1
-        else:
-                true_times+=1
-        print(f"正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
+            _, preds = torch.max(output, 1)
+            true_times  =  torch.sum(preds == label.data)
+            false_times = len(label)-true_times
+            loss_record.append(loss)
+            print(loss) 
+            
+            print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
     # TODO: Inference on test set 作測驗用
     
+    torch.save(model.state_dict(),args.ckpt_dir) #儲存模型
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()

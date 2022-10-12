@@ -62,7 +62,23 @@ class SeqClsDataset(Dataset):
             "id":id_list
         }
         
-        return collate #text_list.to(device), offsets.to(device)
+        return collate 
+
+    def collate_fn_test(self, samples: List[Dict]) -> Dict:  #給test用,去掉label_list
+        text_list, id_list = [], []
+        for sample in samples:
+            id_list.append(sample['id'])
+            text_list.append([words  for words in sample['text'].split()]) #List[List[str]]
+        
+        text =  self.vocab.encode_batch(text_list) 
+        processed_text = torch.tensor(text, dtype=torch.int64) 
+
+        collate ={
+            "input":processed_text,
+            "id":id_list
+        }
+        
+        return collate 
         
 
     def label2idx(self, label: str):

@@ -51,6 +51,10 @@ def main(args):
     # TODO: init model and move model to target device(cpu / gpu)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = SeqClassifier(embeddings,args.hidden_size,args.num_layers,args.dropout,args.bidirectional,150).to(device) 
+    '''
+    FILE3 = 'model_all.pt'
+    model = torch.load(FILE3) #要把第53行的model註解才行,這個能直接延用上一個model參數
+    '''
     
     #train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
     # TODO: init optimizer
@@ -117,8 +121,15 @@ def main(args):
             
         print(f"第{epoch}次的正確率 = {true_times}/{true_times+false_times} = {true_times/(true_times+false_times)}")
     # TODO: Inference on test set 作測驗用
+    print("before save")
     FILE = 'model_state_dict.pt'
     torch.save(model.state_dict(),FILE) #儲存模型,不知為何args.ckpt_dir不行,先生出之後在手動挪
+
+    '''
+    # save whole model (先存,這樣能夠反覆train)
+    FILE = 'model_all.pt'
+    torch.save(model, FILE)
+    '''
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()

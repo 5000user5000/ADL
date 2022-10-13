@@ -80,8 +80,9 @@ def main(args):
             label = data['label'].to(device)
             output = model(input)
             seq_len = label.size()[1]
-            input_lengths = torch.full(size=(args.batch_size,), fill_value=seq_len, dtype=torch.long)
-            target_lengths = torch.randint(low=0, high=8, size=(args.batch_size,), dtype=torch.long)
+            label_batch_size = label.size()[0]#因為可能有不滿128的
+            input_lengths = torch.full(size=(label_batch_size,), fill_value=seq_len, dtype=torch.long)
+            target_lengths = torch.randint(low=0, high=8, size=(label_batch_size,), dtype=torch.long)
 
             loss = loss_fn(output,label,input_lengths,target_lengths)
             optimizer.zero_grad()

@@ -52,6 +52,7 @@ class SeqClassifier(torch.nn.Module):
     def forward(self, batch) -> Dict[str, torch.Tensor]:
         # TODO: implement model forward
         #x, _ = batch
+        batch_size = batch.size()[0]
         seq_len = batch.size()[1]
         out = self.embed(batch)  # [batch_size, seq_len, embeding]=[128, 32, 300],t()是轉置 (之後去掉)    
         H, _ = self.lstm(out)
@@ -63,7 +64,7 @@ class SeqClassifier(torch.nn.Module):
         out = self.fc1(out)
         hiddenout = nn.Linear(self.hidden_size*2, seq_len*9) #9*seq_len,seq_len為一句的長度,9為類別數
         out = hiddenout(out)
-        out = out.reshape(-1,128,9) #[seq_len,128,9]
+        out = out.reshape(-1,batch_size,9) #[seq_len,128,9],用batch_size是包括湊不成128的
 
         
 

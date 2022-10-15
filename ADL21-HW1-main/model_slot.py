@@ -60,9 +60,10 @@ class SeqClassifier(torch.nn.Module):
         alpha = F.softmax(torch.matmul(M, self.w), dim=1).unsqueeze(-1)
         out = H * alpha 
         out = torch.sum(out, 1)
-        out = F.relu(out)
+        out = F.relu(out)  
         out = self.fc1(out)
         hiddenout = nn.Linear(self.hidden_size*2, seq_len*9) #9*seq_len,seq_len為一句的長度,9為類別數
+        hiddenout = hiddenout.cuda() #因為這是自己定義,非self的,所以model.to(device)不會影響到hiddenout,
         out = hiddenout(out)
         out = out.reshape(-1,batch_size,9) #[seq_len,128,9],用batch_size是包括湊不成128的
 

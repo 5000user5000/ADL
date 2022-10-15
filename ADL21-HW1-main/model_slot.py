@@ -33,13 +33,13 @@ class SeqClassifier(torch.nn.Module):
 
         # TODO: model architecture
         self.lstm = nn.LSTM(self.embedding_dim, hidden_size=self.hidden_size, num_layers=self.num_layers,
-                            bidirectional=self.bidirectional, batch_first=True, dropout=dropout) #除了self.embed之外,其他param的self都拔掉
+                            bidirectional=self.bidirectional, batch_first=True) #除了self.embed之外,其他param的self都拔掉
         #self.fc = nn.Linear(hidden_size * 2, num_class)
         
         self.tanh1 = nn.Tanh()
         self.w = nn.Parameter(torch.zeros(hidden_size * 2))
         self.tanh2 = nn.Tanh()
-        self.fc1 = nn.Linear(hidden_size * 2, 1024)
+        self.fc = nn.Linear(hidden_size * 2, 9)
         # Fully-connected layer，把 hidden state 線性轉換成 output
         self.hidden2out = nn.Linear(self.hidden_size*2, self.num_classes) 
 
@@ -49,25 +49,16 @@ class SeqClassifier(torch.nn.Module):
 
         raise NotImplementedError
 
-    def forward(self, batch) -> Dict[str, torch.Tensor]:
+    def forward(self, X) -> Dict[str, torch.Tensor]:
         # TODO: implement model forward
         #x, _ = batch
-        batch_size = batch.size()[0]
-        seq_len = batch.size()[1]
-        out = self.embed(batch)  # [batch_size, seq_len, embeding]=[128, 32, 300],t()是轉置 (之後去掉)    
-        H, _ = self.lstm(out)
-        M = self.tanh1(H)
-        alpha = F.softmax(torch.matmul(M, self.w), dim=1).unsqueeze(-1)
-        out = H * alpha 
-        out = torch.sum(out, 1)
-        out = F.relu(out)  
-        out = self.fc1(out)
-        hiddenout = nn.Linear(self.hidden_size*2, seq_len*9) #9*seq_len,seq_len為一句的長度,9為類別數
-        hiddenout = hiddenout.cuda() #因為這是自己定義,非self的,所以model.to(device)不會影響到hiddenout,
-        out = hiddenout(out)
-        out = out.reshape(-1,batch_size,9) #[seq_len,128,9],用batch_size是包括湊不成128的
-
+        #batch_size = batch.size()[0]
+        #seq_len = batch.size()[1]
+        out = self.embed(X)
+        embed = F.dropout(out, p=0.2, training=True) 
+        outputs, _ = self.lstm(embed)
+        outputs = self.fc(outputs)
         
 
-        return out
+        return outputs
         

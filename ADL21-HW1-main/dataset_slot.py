@@ -38,21 +38,22 @@ class SeqClsDataset(Dataset):
 
     
 
-    def collate_fn(self, samples: List[Dict]) -> Dict:
+    def collate_fn(self, sample: List[Dict]) -> Dict:
         # TODO: implement collate_fn
         label_list, text_list, id_list = [], [], []
-        for sample in samples:
-            label = [ self.label_mapping[tag] for tag in sample['tags'] ] #1個個轉換
-            label_list.append(label)
-            id_list.append(sample['id'])
-            text_list.append(sample['tokens']) #List[List[str]]
-        
-        text =  self.vocab.encode_batch(text_list) 
+        #print(sample[0]['tags'])
+        label = [ self.label_mapping[tag] for tag in sample[0]['tags'] ] #1個個轉換
+        id_list.append(sample[0]['id'])
+        text_list = sample[0]['tokens']
+        #text_list.append(sample['tokens']) #List[List[str]]
+        #print("label=")
+        #print(label)
+        text =  self.vocab.encode(text_list) 
         processed_text = torch.tensor(text, dtype=torch.int64) 
         
         
-        label_list = padding(label_list)
-        label_list = torch.tensor(label_list, dtype=torch.int64)
+        #label_list = padding(label_list)
+        label_list = torch.tensor(label, dtype=torch.int64)
         
 
         collate ={
@@ -62,7 +63,32 @@ class SeqClsDataset(Dataset):
         }
         
         return collate 
+      
+    def collate_fn_test(self, sample: List[Dict]) -> Dict:
+        # TODO: implement collate_fn
+        label_list, text_list, id_list = [], [], []
+        #print(sample[0]['tags'])
+        #label = [ self.label_mapping[tag] for tag in sample[0]['tags'] ] #1個個轉換
+        id_list.append(sample[0]['id'])
+        text_list = sample[0]['tokens']
+        #text_list.append(sample['tokens']) #List[List[str]]
+        #print("label=")
+        #print(label)
+        text =  self.vocab.encode(text_list) 
+        processed_text = torch.tensor(text, dtype=torch.int64) 
         
+        
+        #label_list = padding(label_list)
+        #label_list = torch.tensor(label, dtype=torch.int64)
+        
+
+        collate ={
+            #"label":label_list,
+            "input":processed_text,
+            "id":id_list
+        }
+        
+        return collate     
 
     def label2idx(self, label: str):
         return self.label_mapping[label]
@@ -73,5 +99,5 @@ class SeqClsDataset(Dataset):
     
 def padding(batch: List[List[int]]):
     to_len = max(len(tag) for tag in batch)
-    paddeds = [seq[:to_len] + [0] * max(0, to_len - len(seq)) for seq in batch]
+    paddeds = [seq[:to_len] + [9] * max(0, to_len - len(seq)) for seq in batch]
     return paddeds

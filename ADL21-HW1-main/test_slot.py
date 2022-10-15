@@ -2,7 +2,7 @@ import json
 import pickle
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, List
 from torch.utils.data import DataLoader
 import torch
 
@@ -52,7 +52,7 @@ def main(args):
             #print(len(preds))
             _pred = []
             for i in range(len(preds)):
-              _pred.append(idx2label[int(preds[i])])
+                _pred.append(idx2label[int(preds[i])])
             #_pred = [idx2label[elem] for elem in preds] #idx2label[elem]
             #print(_pred)
             result.append([data['id'],_pred ])
@@ -71,16 +71,16 @@ def main(args):
             writer.writerow([_id[0], label])
 
 def convert2str(label:List[str]):
-  s = ''
-  _len = len(label)
-  times=0
-  for lab in label:
-    s +=lab
+    s = ''
+    _len = len(label)
+    times=0
+    for lab in label:
+        s +=lab
     if(times != (_len - 1)):
-      s+=" "
+        s+=" "
     times+=1
-  print(s)
-  return s
+    print(s)
+    return s
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()

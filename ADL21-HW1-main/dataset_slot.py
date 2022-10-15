@@ -63,7 +63,7 @@ class SeqClsDataset(Dataset):
         }
         
         return collate 
-      
+
     def collate_fn_test(self, sample: List[Dict]) -> Dict:
         # TODO: implement collate_fn
         label_list, text_list, id_list = [], [], []

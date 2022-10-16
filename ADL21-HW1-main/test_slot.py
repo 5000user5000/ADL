@@ -76,9 +76,9 @@ def convert2str(label:List[str]):
     times=0
     for lab in label:
         s +=lab
-    if(times != (_len - 1)):
-        s+=" "
-    times+=1
+        if(times != (_len - 1)):
+            s+=" "
+        times+=1
     print(s)
     return s
 

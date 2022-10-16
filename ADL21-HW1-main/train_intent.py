@@ -13,6 +13,7 @@ from utils import Vocab
 
 from model import SeqClassifier # model.py
 import torch.optim as optim
+import os
 
 
 
@@ -127,7 +128,7 @@ def main(args):
 
     # TODO: Inference on test set 作測驗用
     print("before save")
-    FILE = 'model_state_dict.pt'
+    FILE = os.path.join(args.ckpt_dir , 'model_state_dict.pt')
     torch.save(model.state_dict(),FILE) #儲存模型,不知為何args.ckpt_dir不行,先生出之後在手動挪
 
     '''
@@ -154,7 +155,7 @@ def parse_args() -> Namespace:
         "--ckpt_dir",
         type=Path,
         help="Directory to save the model file.",
-        default="./ckpt/intent/model_state_dict.pt",
+        default="./ckpt/intent/",
     )
 
     # data

@@ -39,24 +39,12 @@ python train_intent.py
 
 ```
 
-因為args.ckpt_dir用在torch.save()會錯誤,只好先存在當前路徑,並使用以下linux語法移動到該有的位置(/ckpt/intent)
-
-```
-mv ./model_state_dict.pt ./ckpt/intent
-```
-
 ## Slot filling
 
 ```shell
 
 python train_slot.py
 
-```
-
-同Intent detection
-
-```
-mv ./model_state_dict_slot.pt ./ckpt/slot
 ```
 
 

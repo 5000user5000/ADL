@@ -13,7 +13,7 @@ from utils import Vocab
 
 from model_slot import SeqClassifier 
 import torch.optim as optim
-
+import os
 
 
 
@@ -113,14 +113,14 @@ def main(args):
 
     # TODO: Inference on test set 作測驗用
     print("before save")
-    FILE = 'model_state_dict_slot.pt'
+    FILE = os.path.join(args.ckpt_dir,'model_state_dict_slot.pt')
     torch.save(model.state_dict(),FILE) #儲存模型,不知為何args.ckpt_dir不行,先生出之後在手動挪
 
-    
+    '''
     # save whole model (先存,這樣能夠反覆train)
-    FILE = 'model_all_slot.pt'
+    FILE = os.path.join(args.ckpt_dir,'model_all_slot.pt')
     torch.save(model, FILE)
-    
+    '''
 
 
     #驗證
@@ -165,7 +165,7 @@ def parse_args() -> Namespace:
         "--ckpt_dir",
         type=Path,
         help="Directory to save the model file.",
-        default="./ckpt/slot/model_state_dict_slot.pt",
+        default="./ckpt/slot/",
     )
 
     # data

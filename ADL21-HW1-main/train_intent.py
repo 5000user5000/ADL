@@ -154,7 +154,7 @@ def parse_args() -> Namespace:
         "--ckpt_dir",
         type=Path,
         help="Directory to save the model file.",
-        default="./ckpt/intent/weight.pt",
+        default="./ckpt/intent/model_state_dict.pt",
     )
 
     # data

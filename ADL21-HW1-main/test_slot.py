@@ -42,7 +42,7 @@ def main(args):
     model.load_state_dict(ckpt)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = model.cuda()
+    model = model.to(device)
     # TODO: predict dataset
     result = []
     for num,data in enumerate(dataloader_test):  

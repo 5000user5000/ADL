@@ -50,11 +50,11 @@ def main(args):
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
     # TODO: init model and move model to target device(cpu / gpu)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    #model = SeqClassifier(embeddings,args.hidden_size,args.num_layers,args.dropout,args.bidirectional,9).to(device) 
-    
+    model = SeqClassifier(embeddings,args.hidden_size,args.num_layers,args.dropout,args.bidirectional,9).to(device) 
+    '''
     FILE3 = 'model_all_slot.pt'
     model = torch.load(FILE3) #要把第53行的model註解才行,這個能直接延用上一個model參數
-    
+    '''
     
     #train_iter = build_iterator(datasets["train"],batch_size=4, device=device)#迭代用,dataset先不用loader
     # TODO: init optimizer
@@ -165,7 +165,7 @@ def parse_args() -> Namespace:
         "--ckpt_dir",
         type=Path,
         help="Directory to save the model file.",
-        default="./ckpt/slot/weight.pt",
+        default="./ckpt/slot/model_state_dict_slot.pt",
     )
 
     # data
@@ -187,7 +187,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--device", type=torch.device, help="cpu, cuda, cuda:0, cuda:1", default="cpu"
     )
-    parser.add_argument("--num_epoch", type=int, default=5)#40次就很夠了
+    parser.add_argument("--num_epoch", type=int, default=15)
 
     args = parser.parse_args()
     return args

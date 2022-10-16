@@ -60,7 +60,7 @@ def main(args):
         
 
     # TODO: write prediction to file (args.pred_file)
-    with open('slot_output.csv', 'w', newline='') as csvfile:
+    with open(args.pred_file, 'w', newline='') as csvfile:
         # 建立 CSV 檔寫入器
         writer = csv.writer(csvfile)
         # 寫入第一列資料

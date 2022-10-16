@@ -1,0 +1,1 @@
+python3.9 test_slot.py --test_file "${1}" --ckpt_path ckpt/slot/model_state_dict_slot.pt --pred_file "${2}"

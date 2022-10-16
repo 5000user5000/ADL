@@ -129,7 +129,7 @@ def main(args):
     # TODO: Inference on test set 作測驗用
     print("before save")
     FILE = os.path.join(args.ckpt_dir , 'model_state_dict.pt')
-    torch.save(model.state_dict(),FILE) #儲存模型,不知為何args.ckpt_dir不行,先生出之後在手動挪
+    torch.save(model.state_dict(),FILE) #儲存模型
 
     '''
     # save whole model (先存,這樣能夠反覆train)
@@ -177,7 +177,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--device", type=torch.device, help="cpu, cuda, cuda:0, cuda:1", default="cpu"
     )
-    parser.add_argument("--num_epoch", type=int, default=40)#40次就很夠了
+    parser.add_argument("--num_epoch", type=int, default=100)#100~150次成績最好
 
     args = parser.parse_args()
     return args

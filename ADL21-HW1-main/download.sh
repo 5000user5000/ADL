@@ -1,2 +1,2 @@
 wget https://drive.google.com/file/d/1v71XL5UR1FmJ4M8eWAx-b4FYzgKkJr8X/view?usp=sharing -O ckpt/intent/model_state_dict.pt
-wget https://drive.google.com/file/d/1nOip4zdvdeiMgnC1YV34TOdJoM8X-lN1/view?usp=sharing -O ckpt/intent/model_state_dict_slot.pt
+wget https://drive.google.com/file/d/1nOip4zdvdeiMgnC1YV34TOdJoM8X-lN1/view?usp=sharing -O ckpt/slot/model_state_dict_slot.pt

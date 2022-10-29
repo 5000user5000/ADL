@@ -1,0 +1,31 @@
+{
+
+    "model_name_or_path": "hfl/chinese-macbert-large",
+    "tokenizer_name": null,
+    "cache_dir": null,
+    "ckpt_path": "./ckpt",
+    
+    "context_file": "./data/context.json",
+    "train_file": "./data/train.json",
+    "valid_file": "./data/valid.json",
+    "test_file": "./data/test.json",
+    "max_seq_length": 512,
+    "pad_to_max_len": true,
+    
+    "seed": 777,
+    "fp16": false, 
+    "gradient_checkpointing": true,
+    "num_train_epochs": 5,
+    "learning_rate": 5e-5,
+    "weight_decay": 0,
+    "per_device_train_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "output_dir": "./cs_output",
+    "evaluation_strategy": "steps",
+    "eval_steps": 1000,
+    "logging_strategy": "steps",
+    "logging_steps": 200,
+    "logging_dir": null,
+    "save_strategy": "epoch",
+    "save_total_limit": 3
+}

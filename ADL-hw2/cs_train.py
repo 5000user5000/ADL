@@ -109,6 +109,8 @@ def main():
         type='valid',
         tokenizer=tokenizer
     )
+    
+
 
     # initialize trainer
     trainer = Trainer(

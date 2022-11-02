@@ -62,19 +62,18 @@ class MultiChoiceDataset(Dataset):
         return ret
 
 
-    def collate(self,_) -> Dict[str, torch.Tensor]:
-        # 參數的 '_' 只是佔個位置,沒有用途,因為輸入參數預設為2個,但是實際只需要self就好 
+    def collate(self,features) -> Dict[str, torch.Tensor]:
 
         #預設2
-        batch_size =  2 
-        #預設4,也就是有4個選項
-        num_choices = 4 
+        batch_size =  len(features) 
+        #應該會是4,也就是有4個選項
+        num_choices = len(features[0]["context"])
         
         # extract data
-        question_set: List[List] = [instance['question'] for instance in self.data]
-        context_set: List[List] = [instance['context'] for instance in self.data]
+        question_set: List[List] = [instance['question'] for instance in features]
+        context_set: List[List] = [instance['context'] for instance in features]
         if self.type != 'test':
-            labels: List = [instance['label'] for instance in self.data]
+            labels: List = [instance['label'] for instance in features]
 
         # flatten input
         questions = list(chain(*question_set))

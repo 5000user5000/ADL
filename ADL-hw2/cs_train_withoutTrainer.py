@@ -26,7 +26,6 @@ from transformers import (
     AutoTokenizer,
     PreTrainedTokenizerBase,
     SchedulerType,
-    default_data_collator,
     get_scheduler,
 )
 from transformers.utils import PaddingStrategy
@@ -332,21 +331,10 @@ def main():
 
 
     # Log a few random samples from the training set:
-    for index in random.sample(range(len(train_dataset)), 3):
-        logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
+    #for index in random.sample(range(len(train_dataset)), 3):
+    #    logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
 
-    # DataLoaders creation:
-    if args.pad_to_max_length:
-        # If padding was already done to max length, we use the default data collator that will just convert everything
-        # to tensors.
-        data_collator = default_data_collator
-    else:
-        # Otherwise, `DataCollatorWithPadding` will apply dynamic padding for us (by padding to the maximum length of
-        # the samples passed). When using mixed precision, we add `pad_to_multiple_of=8` to pad all tensors to multiple
-        # of 8s, which will enable the use of Tensor Cores on NVIDIA hardware with compute capability >= 7.5 (Volta).
-        data_collator = DataCollatorForMultipleChoice(
-            tokenizer, pad_to_multiple_of=(8 if accelerator.use_fp16 else None)
-        )
+    
 
     train_dataloader = DataLoader(
         train_dataset, shuffle=True, collate_fn=train_dataset.collate, batch_size=args.per_device_train_batch_size

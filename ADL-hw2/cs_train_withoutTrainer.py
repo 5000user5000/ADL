@@ -26,6 +26,7 @@ from transformers import (
     AutoTokenizer,
     PreTrainedTokenizerBase,
     SchedulerType,
+    default_data_collator,
     get_scheduler,
 )
 from transformers.utils import PaddingStrategy
@@ -84,7 +85,7 @@ def parse_args():
     parser.add_argument(
         "--model_name_or_path",
         type=str,
-        default="hfl/chinese-macbert-large",
+        default="bert-base-chinese",
         help="Path to pretrained model or model identifier from huggingface.co/models.",
         required=False,
     )
@@ -161,15 +162,10 @@ def parse_args():
         action="store_true",
         help="Activate debug mode and run training only with a subset of data.",
     )
-    parser.add_argument("--push_to_hub", action="store_true", help="Whether or not to push the model to the Hub.")
-    parser.add_argument(
-        "--hub_model_id", type=str, help="The name of the repository to keep in sync with the local `output_dir`."
-    )
-    parser.add_argument("--hub_token", type=str, help="The token to use to push to the Model Hub.")
     parser.add_argument(
         "--checkpointing_steps",
         type=str,
-        default=None,
+        default=1,
         help="Whether the various states should be saved at the end of every n steps, or 'epoch' for each epoch.",
     )
     parser.add_argument(
@@ -293,7 +289,7 @@ def main():
             'context': args.context_file,
             'train': args.train_file,
         },
-        type ='train',
+        split ='train',
         tokenizer=tokenizer,
     )
     eval_dataset = MultiChoiceDataset(
@@ -301,7 +297,7 @@ def main():
             'context': args.context_file,
             'valid': args.validation_file,
         },
-        type='valid',
+        split ='valid',
         tokenizer=tokenizer
     )
     test_dataset = MultiChoiceDataset(
@@ -309,37 +305,61 @@ def main():
             'context': args.context_file,
             'test': args.test_file,
         },
-        type='test',
+        split ='test',
         tokenizer=tokenizer
     )
-
-
-    # When using your own dataset or a different dataset from swag, you will probably need to change this.
-    '''
-    ending_names = [f"ending{i}" for i in range(4)]
-    context_name = "question"
-    question_header_name = "context"
-    label_column_name = "label" if "label" in column_names else "labels"
-    '''
-
-    
 
     # Preprocessing the datasets.
     # First we tokenize all the texts.
     padding = "max_length" if args.pad_to_max_length else False
 
+    
+    def preprocess_function(examples):
+        first_sentences =[ example["context"] for example in examples ]
+        second_sentences = [ example["question"] for example in examples ]
+        labels = [ example["label"] for example in examples ]
+        
+        # Flatten out
+        first_sentences = list(chain(*first_sentences))
+        second_sentences = list(chain(*second_sentences))
+
+        # Tokenize
+        tokenized_examples = tokenizer(
+            first_sentences,
+            second_sentences,
+            max_length=args.max_length,
+            padding=padding,
+            truncation=True,
+        )
+
+        # Un-flatten
+        tokenized_inputs = {k: [v[i : i + 4] for i in range(0, len(v), 4)] for k, v in tokenized_examples.items()}
+        tokenized_inputs["labels"] = labels
+        return tokenized_inputs
+
+    data_size = len(train_dataset.data)
+    preprocess_all_batch = data_size//1000
+    batch_list = [ 1000*i for i in range(preprocess_all_batch+1)]
+    batch_list.append(data_size)
+    train_dataset_preprocessed = [ preprocess_function(train_dataset.data[  batch_list[i] : batch_list[i+1]  ])    for i in  range(preprocess_all_batch+1) ]
+    
+
+    
 
 
     # Log a few random samples from the training set:
     #for index in random.sample(range(len(train_dataset)), 3):
     #    logger.info(f"Sample {index} of the training set: {train_dataset[index]}.")
 
-    
+    data_collator = DataCollatorForMultipleChoice(
+            tokenizer, pad_to_multiple_of=(8 if accelerator.use_fp16 else None)
+        )
 
+    
     train_dataloader = DataLoader(
-        train_dataset, shuffle=True, collate_fn=train_dataset.collate, batch_size=args.per_device_train_batch_size
-    ) # data_collator
-    eval_dataloader = DataLoader(eval_dataset, collate_fn=train_dataset.collate, batch_size=args.per_device_eval_batch_size)
+        train_dataset_preprocessed, shuffle=True, collate_fn= data_collator, batch_size=args.per_device_train_batch_size
+    ) # data_collator  
+    eval_dataloader = DataLoader(eval_dataset, collate_fn=data_collator, batch_size=args.per_device_eval_batch_size)
 
     # Optimizer
     # Split weights in two groups, one with weight decay and the other not.
@@ -388,7 +408,7 @@ def main():
 
     # Figure out how many steps we should save the Accelerator states
     checkpointing_steps = args.checkpointing_steps
-    if checkpointing_steps is not None and checkpointing_steps.isdigit():
+    if checkpointing_steps is not None: # and checkpointing_steps.isdigit()
         checkpointing_steps = int(checkpointing_steps)
 
     # We need to initialize the trackers we use, and also store our configuration.

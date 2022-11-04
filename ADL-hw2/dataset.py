@@ -14,21 +14,21 @@ class MultiChoiceDataset(Dataset):
     def __init__(
         self,
         data: Dict[str, str],
-        type: str,
+        split: str,
         tokenizer: AutoTokenizer,
         max_len: int = 512,
         pad_to_max_len: bool = False,
     ):
     
-        #type是指資料種類,如train  valid test
-        self.type = type 
+        # split是指資料種類,如train  valid test
+        self.split = split 
         self.tokenizer = tokenizer
         self.max_len = max_len
         self.pad_to_max_len = pad_to_max_len
 
         self.context_path = data['context']
         #根据資料種類去拿相關data
-        self.data_path = data[type] 
+        self.data_path = data[split] 
         #預處理後的資料
         self.data = self.preprocess()
     
@@ -47,7 +47,7 @@ class MultiChoiceDataset(Dataset):
             raw_data: List[Dict] = json.load(data_f)
 
         #根據不同種類的資料,給予不同的返回值,這樣就不用寫2個dataset
-        if self.type == 'test':
+        if self.split == 'test':
             ret = [{
                 'question': [sample['question']] * len(sample['paragraphs']),
                 'context': [raw_context[idx] for idx in sample['paragraphs']],
@@ -55,14 +55,15 @@ class MultiChoiceDataset(Dataset):
         else:
             ret = [{
                 'question': [sample['question']] * len(sample['paragraphs']),
-                'context': [raw_context[idx] for idx in sample['paragraphs']],
+    
                 'label': sample['paragraphs'].index(sample['relevant']),
-            } for sample in raw_data]
+                'context': [raw_context[idx] for idx in sample['paragraphs']],
+            } for sample in raw_data] 
 
         return ret
 
 
-    def collate(self,features) -> Dict[str, torch.Tensor]:
+    def collate(self,features: List[Dict]) -> Dict[str, torch.Tensor]:
 
         #預設2
         batch_size =  len(features) 
@@ -72,7 +73,7 @@ class MultiChoiceDataset(Dataset):
         # extract data
         question_set: List[List] = [instance['question'] for instance in features]
         context_set: List[List] = [instance['context'] for instance in features]
-        if self.type != 'test':
+        if self.split != 'test':
             labels: List = [instance['label'] for instance in features]
 
         # flatten input
@@ -92,7 +93,7 @@ class MultiChoiceDataset(Dataset):
         # un-flatten
         batch = {k: v.view(batch_size, num_choices, -1) for k, v in batch.items()}
         # add lable
-        if self.type != 'test':
+        if self.split != 'test':
             batch['labels'] = torch.tensor(labels)
 
         return batch

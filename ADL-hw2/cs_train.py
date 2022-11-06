@@ -46,7 +46,7 @@ args = TrainingArguments(
     learning_rate=3e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=3,
+    num_train_epochs=1,
     weight_decay=0.01,
     gradient_accumulation_steps=8,
     push_to_hub=False,
@@ -67,9 +67,12 @@ transformers.utils.logging.enable_default_handler()
 transformers.utils.logging.enable_explicit_format()
 
 # set model and tokenizer
-model = AutoModelForMultipleChoice.from_pretrained("bert-base-chinese")
-tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
-
+'''
+model = AutoModelForMultipleChoice.from_pretrained(model_name) 
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+'''
+model = AutoModelForMultipleChoice.from_pretrained("./pt_save_pretrained") #之前自己訓練好的數據
+tokenizer = AutoTokenizer.from_pretrained("./pt_save_pretrained")
 
 
 # data path
@@ -203,8 +206,11 @@ trainer = Trainer(
 )
 
 #開始train
-trainer.train()
+checkpoint = "./checkpoint-1000"
+trainer.train(resume_from_checkpoint=checkpoint)
+# trainer.train() #如果沒有ckpt就用這行
 
+# 儲存model等數據
 pt_save_directory = "./pt_save_pretrained"
 tokenizer.save_pretrained(pt_save_directory)
 model.save_pretrained(pt_save_directory)

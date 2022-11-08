@@ -52,6 +52,25 @@ args = TrainingArguments(
     push_to_hub=False,
 )
 
+'''
+args = TrainingArguments(
+    f"{model_name}-finetuned-swag",
+    evaluation_strategy = "steps",
+    save_total_limit = 5,
+    learning_rate=3e-5,
+    save_strategy='steps', 
+    eval_steps=1000,
+    save_steps=1000,
+    logging_steps=1000,
+    per_device_train_batch_size=batch_size,
+    per_device_eval_batch_size=batch_size,
+    num_train_epochs=2,
+    weight_decay=0.01,
+    gradient_accumulation_steps=8,
+    push_to_hub=False,
+    load_best_model_at_end=True,
+)
+'''
 
 # Setup logging
 logging.basicConfig(

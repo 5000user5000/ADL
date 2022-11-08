@@ -21,7 +21,8 @@ from typing import Optional, Union ,List,Dict
 from dataclasses import dataclass
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase, PaddingStrategy
 from pathlib import Path
-
+from trainer import QuestionAnsweringTrainer
+from utils_qa import postprocess_qa_predictions
 
 
 
@@ -41,14 +42,14 @@ def main():
     cs_tokenizer = AutoTokenizer.from_pretrained(
         cs_pretrained_name
     )
-    '''
+    
     qa_model = AutoModelForQuestionAnswering.from_pretrained(
         qa_pretrained_name
     )
     qa_tokenizer = AutoTokenizer.from_pretrained(
         qa_pretrained_name
     )
-    '''
+    
     
     
 
@@ -106,8 +107,7 @@ def main():
 
 
     # 把資料 批次丟入(map)給預處理 , drop_last_batch可以不寫 , 預設batch 1000 , last batch不會讀取的樣子
-    #encoded_datasets = raw_dataset.map(preprocess_function, batched=True , drop_last_batch=False)
-    encoded_datasets = test_dataset.map(preprocess_function, batched=True , drop_last_batch=False)
+    #encoded_datasets = test_dataset.map(preprocess_function, batched=True , drop_last_batch=False)
 
     @dataclass
     class DataCollatorForMultipleChoice:
@@ -163,21 +163,13 @@ def main():
 
     # context selection prediction
     print('Begin context selection...')
-    result = cs_trainer.predict(encoded_datasets["train"])
-    context_preds = np.argmax(result[0], axis=1)
+    #result = cs_trainer.predict(encoded_datasets["train"])
+    #context_preds = np.argmax(result[0], axis=1)
 
-    '''
-    new_data_files = preprocces_data_files(
-        data_files={
-            'context': data_args.context_file,
-            'test': data_args.test_file,
-        },
-        splits=['test'],
-        context_preds=context_preds
-    )
-    qa_dataset = load_qa_dataset(
-        data_files=new_data_files,
-    )
+    ######## qa
+    cs_pred_path = "./data/cs_pred.json"
+    qa_dataset = load_dataset("json",data_files=cs_pred_path)
+    
 
     def prepare_test_features(examples):
         # Tokenize our examples with truncation and maybe padding, but keep the overflows using a stride. This results
@@ -188,11 +180,11 @@ def main():
             examples['question' if pad_on_right else 'context'],
             examples['context' if pad_on_right else 'question'],
             truncation="only_second" if pad_on_right else "only_first",
-            max_length=data_args.max_len,
-            stride=data_args.doc_stride,
+            max_length=512,
+            stride=128,
             return_overflowing_tokens=True,
             return_offsets_mapping=True,
-            padding="max_length" if data_args.pad_to_max_len else False,
+            padding="max_length",
         )
 
         # Since one example might give us several features if it has a long context, we need a map from a feature to
@@ -221,8 +213,8 @@ def main():
 
         return tokenized_examples
 
-    column_names = qa_dataset['test'].column_names
-    qa_test_dataset = qa_dataset['test'].map(
+    column_names = qa_dataset['train'].column_names
+    qa_test_dataset = qa_dataset['train'].map(
         prepare_test_features,
         batched=True,
         remove_columns=column_names,
@@ -249,17 +241,19 @@ def main():
     print("Begin question answering...")
     result = qa_trainer.predict(
         predict_dataset=qa_test_dataset,
-        predict_examples=qa_dataset['test']
+        predict_examples=qa_dataset['train']
     )
     
-    with open(data_args.output_file, 'w', encoding='utf-8') as f:
+    output_file = "./data/qa_ans.json"
+
+    with open(output_file, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['id', 'answer'])
         rows = []
         for pred in result.predictions:
             rows.append([pred["id"], pred["prediction_text"]])
         writer.writerows(rows)
-    '''
+    
 
 if __name__ == '__main__':
     main()

@@ -151,5 +151,10 @@ trainer = Trainer(
 
 trainer.train()
 
+# 儲存model等數據
+pt_save_directory = "./qa_pt_save_pretrained"
+tokenizer.save_pretrained(pt_save_directory)
+model.save_pretrained(pt_save_directory)
+trainer.save_model(pt_save_directory) 
 
 

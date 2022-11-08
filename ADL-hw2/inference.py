@@ -244,7 +244,7 @@ def main():
         predict_examples=qa_dataset['train']
     )
     
-    output_file = "./data/qa_ans.json"
+    output_file = "./data/qa_ans.csv"
 
     with open(output_file, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)

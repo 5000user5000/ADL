@@ -1,7 +1,7 @@
-transformers   ==  4.22.1
-datasets       ==  2.6.1
+transformers   ==  4.22.2
+datasets       ==  2.5.2
 torch          ==  1.12.1
 evaluate       ==  0.3.0
-accelerate     ==  0.13.2
-tqdm           ==   4.64.1
+accelerate     ==  0.13.0
+tqdm          
 numpy

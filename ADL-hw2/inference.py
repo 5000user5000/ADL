@@ -1,8 +1,7 @@
-import sys
-import os
 import numpy as np
 import csv
 import torch
+from argparse import ArgumentParser, Namespace
 
 from transformers import (
     AutoModelForMultipleChoice, 
@@ -17,7 +16,7 @@ from transformers import (
 
 from datasets import load_dataset
 import json 
-from typing import Optional, Union ,List,Dict
+from typing import Optional, Union ,List
 from dataclasses import dataclass
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase, PaddingStrategy
 from pathlib import Path
@@ -27,10 +26,10 @@ from utils_qa import postprocess_qa_predictions
 
 
 
-def main():
+def main(args):
     
-    cs_pretrained_name = "pt_save_pretrained"
-    qa_pretrained_name = "qa_pt_save_pretrained"
+    cs_pretrained_name = "./ckpt/CS_pretrain"
+    qa_pretrained_name = "./ckpt/QA_pretrain"
     
     # fix random seed
     torch.manual_seed(777)
@@ -54,39 +53,22 @@ def main():
     
 
     
-    test_file_path = "./data/test.json"
-    context_file_path = "./data/context.json"
-    preprocess_train_path = './data/prep_train.json'
-    preprocess_valid_path = './data/prep_valid.json'
-    preprocess_test_path = './data/prep_test.json'
+    test_file_path = args.testing_file
+    context_file_path = args.context_file
+
+    
     
     # read file
     with open(test_file_path, 'r', encoding='utf-8') as context_f:
             test_context: List = json.load(context_f)
     with open(context_file_path, 'r', encoding='utf-8') as context_f:
             context_context: List = json.load(context_f)
-    ''' #做過一次就不用第二次
-    # 寫入label (也就是在paragraphs的index)
-    for i in range(len(test_context)):
-        test_context[i]["label"] = -1
-    
-    myfile = Path(preprocess_test_path)
-    myfile.touch(exist_ok=True)
-    
-    with open(preprocess_test_path, 'w') as f:
-        json.dump(test_context, f)
-    '''
 
 
-    train_dataset = load_dataset("json",data_files=preprocess_train_path)
-    valid_dataset = load_dataset("json",data_files=preprocess_valid_path)
+
     test_dataset = load_dataset("json",data_files=test_file_path)
     
-    raw_dataset = train_dataset
-    raw_dataset["valid"] = valid_dataset["train"]
-    raw_dataset["test"] = test_dataset["train"]
-    print(raw_dataset)
-    
+
     # 將問題和選項 預處理
     def preprocess_function(examples):
         # Repeat each first sentence four times to go with the four possibilities of second sentences.
@@ -107,7 +89,7 @@ def main():
 
 
     # 把資料 批次丟入(map)給預處理 , drop_last_batch可以不寫 , 預設batch 1000 , last batch不會讀取的樣子
-    #encoded_datasets = test_dataset.map(preprocess_function, batched=True , drop_last_batch=False)
+    encoded_datasets = test_dataset.map(preprocess_function, batched=True , drop_last_batch=False)
 
     @dataclass
     class DataCollatorForMultipleChoice:
@@ -163,10 +145,24 @@ def main():
 
     # context selection prediction
     print('Begin context selection...')
-    #result = cs_trainer.predict(encoded_datasets["train"])
-    #context_preds = np.argmax(result[0], axis=1)
+    result = cs_trainer.predict(encoded_datasets["train"])
+    context_preds = np.argmax(result[0], axis=1) #預測出的標籤
 
-    ######## qa
+    pred = test_context
+
+    for i in range(len(test_context)):
+        idx =context_preds[i]
+        parag_idx =  test_context[i]["paragraphs"][idx]
+        pred[i]["context"] = context_context[parag_idx]
+        del pred[i]["paragraphs"]
+    
+    cs_pred_save_path = "./data/cs_pred.json"
+
+    #將預測的label寫入
+    with open(cs_pred_save_path, 'w', encoding='utf-8') as f:
+        json.dump(pred, f)
+
+    #################### qa ####################
     cs_pred_path = "./data/cs_pred.json"
     qa_dataset = load_dataset("json",data_files=cs_pred_path)
     
@@ -244,7 +240,7 @@ def main():
         predict_examples=qa_dataset['train']
     )
     
-    output_file = "./data/qa_ans.csv"
+    output_file = args.pred_file
 
     with open(output_file, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
@@ -254,6 +250,31 @@ def main():
             rows.append([pred["id"], pred["prediction_text"]])
         writer.writerows(rows)
     
+def parse_args() -> Namespace:
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--context_file",
+        type=Path,
+        help="Directory to the context file.",
+        required=True
+    )
+    parser.add_argument(
+        "--testing_file",
+        type=Path,
+        help="Path to the test file.",
+        required=True
+    )
+    
+    parser.add_argument(
+        "--pred_file",
+        type=Path,
+        help="Path to the predict file.",
+        required=True
+    )
+
+    args = parser.parse_args()
+    return args
 
 if __name__ == '__main__':
-    main()
+    args = parse_args()
+    main(args)

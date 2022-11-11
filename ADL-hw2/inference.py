@@ -53,8 +53,8 @@ def main(args):
     
 
     
-    test_file_path = args.testing_file
-    context_file_path = args.context_file
+    test_file_path = str(rgs.testing_file) #不加str()會報錯
+    context_file_path = str(args.context_file)
 
     
     
@@ -240,7 +240,7 @@ def main(args):
         predict_examples=qa_dataset['train']
     )
     
-    output_file = args.pred_file
+    output_file = str(args.pred_file)
 
     with open(output_file, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)

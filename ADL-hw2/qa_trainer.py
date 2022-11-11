@@ -57,10 +57,10 @@ valid_dataset = load_dataset("json",data_files=preprocess_valid_path)
 
 raw_dataset = train_dataset
 raw_dataset["valid"] = valid_dataset["train"] #預設都是train
-print(raw_dataset)
+#print(raw_dataset)
 
 
-model_name = "bert-base-chinese"
+model_name = "hfl/chinese-roberta-wwm-ext-large"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 
@@ -125,6 +125,7 @@ data_collator = DefaultDataCollator()
 
 
 model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+
 
 
 

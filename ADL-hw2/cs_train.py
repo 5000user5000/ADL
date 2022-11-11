@@ -39,7 +39,9 @@ logger = logging.getLogger(__name__)
 
 #參數
 model_name = "bert-base-chinese"
+#model_name = "hfl/chinese-roberta-wwm-ext-large"
 batch_size = 2
+
 args = TrainingArguments(
     f"{model_name}-finetuned-swag",
     evaluation_strategy = "epoch",
@@ -52,6 +54,7 @@ args = TrainingArguments(
     push_to_hub=False,
 )
 
+#每500 steps就會evaluate一次,確認當前acc和loss
 '''
 args = TrainingArguments(
     f"{model_name}-finetuned-swag",
@@ -59,12 +62,12 @@ args = TrainingArguments(
     save_total_limit = 5,
     learning_rate=3e-5,
     save_strategy='steps', 
-    eval_steps=1000,
-    save_steps=1000,
-    logging_steps=1000,
+    eval_steps=500,
+    save_steps=500,
+    logging_steps=500,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=2,
+    num_train_epochs=1,
     weight_decay=0.01,
     gradient_accumulation_steps=8,
     push_to_hub=False,
@@ -86,13 +89,13 @@ transformers.utils.logging.enable_default_handler()
 transformers.utils.logging.enable_explicit_format()
 
 # set model and tokenizer
-'''
+
 model = AutoModelForMultipleChoice.from_pretrained(model_name) 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 '''
 model = AutoModelForMultipleChoice.from_pretrained("./pt_save_pretrained") #之前自己訓練好的數據
 tokenizer = AutoTokenizer.from_pretrained("./pt_save_pretrained")
-
+'''
 
 # data path
 context_file_path = "./data/context.json"
@@ -137,7 +140,7 @@ test_dataset = load_dataset("json",data_files=test_file_path)
 raw_dataset = train_dataset
 raw_dataset["valid"] = valid_dataset["train"] #預設都是train
 raw_dataset["test"] = test_dataset["train"]
-print(raw_dataset)
+# print(raw_dataset)
 
 # 讀取context.json
 with open(context_file_path, 'r', encoding='utf-8') as context_f:
@@ -176,7 +179,7 @@ class DataCollatorForMultipleChoice:
 
     tokenizer: PreTrainedTokenizerBase
     padding: Union[bool, str, PaddingStrategy] = True
-    max_length: Optional[int] = None
+    max_length: Optional[int] = 512
     pad_to_multiple_of: Optional[int] = None
 
     def __call__(self, features):
@@ -220,14 +223,14 @@ trainer = Trainer(
     train_dataset=encoded_datasets["train"],
     eval_dataset=encoded_datasets["valid"],
     tokenizer=tokenizer,
-    data_collator=DataCollatorForMultipleChoice(tokenizer),
+    data_collator=DataCollatorForMultipleChoice(tokenizer,max_length=512),
     compute_metrics=compute_metrics,
 )
 
 #開始train
-checkpoint = "./checkpoint-1000"
-trainer.train(resume_from_checkpoint=checkpoint)
-# trainer.train() #如果沒有ckpt就用這行
+#checkpoint = "./checkpoint-1000"
+#trainer.train(resume_from_checkpoint=checkpoint)
+trainer.train() #如果沒有ckpt就用這行
 
 # 儲存model等數據
 pt_save_directory = "./pt_save_pretrained"

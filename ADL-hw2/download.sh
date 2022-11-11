@@ -14,6 +14,6 @@ wget  https://www.dropbox.com/s/5bdhqo5okppdbtj/tokenizer.json?dl=0 -O ckpt/QA_p
 wget  https://www.dropbox.com/s/r98ttjhimmxo8f5/tokenizer_config.json?dl=0 -O ckpt/QA_pretrain/tokenizer_config.json
 wget  https://www.dropbox.com/s/ecnf6369n4f5zkc/training_args.bin?dl=0   -O ckpt/QA_pretrain/training_args.bin
 wget  https://www.dropbox.com/s/lb03bbzj72cmkl7/vocab.txt?dl=0  -O ckpt/QA_pretrain/vocab.txt
-
+wget  https://www.dropbox.com/s/33grjsiqx4hkscs/pytorch_model.bin?dl=0 -O ckpt/QA_pretrain/pytorch_model.bin
 
 

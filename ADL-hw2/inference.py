@@ -53,7 +53,7 @@ def main(args):
     
 
     
-    test_file_path = str(rgs.testing_file) #不加str()會報錯
+    test_file_path = str(args.testing_file) #不加str()會報錯
     context_file_path = str(args.context_file)
 
     

@@ -1,0 +1,8 @@
+transformers   ==  4.22.2
+datasets       ==  2.5.2
+torch          ==  1.12.1
+ckiptagger     == 0.2.1
+rouge
+nltk
+evaluate
+jsonlines

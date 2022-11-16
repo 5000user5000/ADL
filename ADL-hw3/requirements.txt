@@ -3,6 +3,8 @@ datasets       ==  2.5.2
 torch          ==  1.12.1
 ckiptagger     == 0.2.1
 rouge
+rouge_score
 nltk
 evaluate
 jsonlines
+sentencepiece 

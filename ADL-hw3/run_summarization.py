@@ -261,10 +261,10 @@ class DataTrainingArguments:
         else:
             if self.train_file is not None:
                 extension = self.train_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
+                assert extension in ["csv", "json","jsonl"], "`train_file` should be a csv or a json  or jsonl file."  #注意補上jsonl
             if self.validation_file is not None:
                 extension = self.validation_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
+                assert extension in ["csv", "json","jsonl"], "`validation_file` should be a csv or a json or jsonl file."
         if self.val_max_target_length is None:
             self.val_max_target_length = self.max_target_length
 
@@ -378,6 +378,7 @@ def main():
         if data_args.test_file is not None:
             data_files["test"] = data_args.test_file
             extension = data_args.test_file.split(".")[-1]
+        extension = 'json' if extension == 'jsonl' else extension #當json用
         raw_datasets = load_dataset(
             extension,
             data_files=data_files,
@@ -582,7 +583,7 @@ def main():
     )
 
     # Metric
-    metric = evaluate.load("rouge")
+    #metric = evaluate.load("rouge")
 
     def postprocess_text(preds, labels):
         preds = [pred.strip() for pred in preds]
@@ -608,7 +609,7 @@ def main():
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
 
         #result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
-        result = get_rouge(preds=decoded_preds, references=decoded_labels)
+        result = get_rouge(preds=decoded_preds, refs=decoded_labels)
         result = {k: round(v * 100, 4) for k, v in result.items()}
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)

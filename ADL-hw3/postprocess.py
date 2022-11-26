@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "--raw_preds",
         type=Path,
-        default="./preds/generated_predictions.txt",
+        default="./generated_predictions.txt",
     )
     parser.add_argument(
         "--input",

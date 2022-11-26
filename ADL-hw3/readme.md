@@ -1,7 +1,6 @@
 # Code for Homework 3 ADL NTU 111 Fall
 
 # environment
----
 
 ```shell
 

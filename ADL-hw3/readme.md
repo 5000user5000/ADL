@@ -16,7 +16,6 @@ cd ..
 ```
 
 # train
----
 
 ```shell
 
@@ -27,7 +26,6 @@ bash train.sh
 輸出預設是放在 ./ckpt
 
 # predict
----
 
 ```shell
 
@@ -39,7 +37,6 @@ bash run.sh
 預設的batch數為8,如果過大可自行條小
 
 # download
----
 
 ```shell
 

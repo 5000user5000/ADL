@@ -218,15 +218,6 @@ class DataTrainingArguments:
             "which is used during ``evaluate`` and ``predict``."
         },
     )
-    top_k: Optional[int] = field(
-        default=None,
-    )
-    top_p: Optional[float] = field(
-        default=None,
-    )
-    temperature: Optional[float] = field(
-        default=None,
-    )
     ignore_pad_token_for_loss: bool = field(
         default=True,
         metadata={
@@ -675,7 +666,7 @@ def main():
         logger.info("*** Predict ***")
 
         predict_results = trainer.predict(
-            predict_dataset, metric_key_prefix="predict", max_length=max_length, num_beams=num_beams, top_k=data_args.top_k, top_p=data_args.top_p, temperature=data_args.temperature
+            predict_dataset, metric_key_prefix="predict", max_length=max_length, num_beams=num_beams
         )
         metrics = predict_results.metrics
         max_predict_samples = (

@@ -46,8 +46,9 @@ from transformers import (
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version, is_offline_mode
-from transformers.utils.versions import require_version
+from transformers.utils import  is_offline_mode
+
+from mytrainer import NEW_Seq2SeqTrainer   #Seq2SeqTrainer增加strategy的版本
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -218,6 +219,16 @@ class DataTrainingArguments:
             "which is used during ``evaluate`` and ``predict``."
         },
     )
+    top_k: Optional[int] = field(
+        default=None, 
+    )
+    top_p: Optional[float] = field(
+        default=None,
+    )
+    temperature: Optional[float] = field(
+        default=None,
+    )
+
     ignore_pad_token_for_loss: bool = field(
         default=True,
         metadata={
@@ -614,7 +625,7 @@ def main():
         return result
 
     # Initialize our Trainer
-    trainer = Seq2SeqTrainer(
+    trainer = NEW_Seq2SeqTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset if training_args.do_train else None,
@@ -653,6 +664,10 @@ def main():
         else data_args.val_max_target_length
     )
     num_beams = data_args.num_beams if data_args.num_beams is not None else training_args.generation_num_beams
+    top_k = data_args.top_k 
+    top_p = data_args.top_p 
+    temperature = data_args.temperature 
+
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
@@ -666,7 +681,7 @@ def main():
         logger.info("*** Predict ***")
 
         predict_results = trainer.predict(
-            predict_dataset, metric_key_prefix="predict", max_length=max_length, num_beams=num_beams
+            predict_dataset, metric_key_prefix="predict", max_length=max_length, num_beams=num_beams, top_k=top_k, top_p=top_p, temperature=temperature
         )
         metrics = predict_results.metrics
         max_predict_samples = (

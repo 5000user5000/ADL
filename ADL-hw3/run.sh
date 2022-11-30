@@ -6,3 +6,4 @@ python3 ./run_summarization.py \
 --per_device_eval_batch_size=8 \
 --predict_with_generate \
 --text_column maintext \
+--top_k 10 \

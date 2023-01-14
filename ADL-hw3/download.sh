@@ -1,1 +1,10 @@
-gdown --folder https://drive.google.com/drive/folders/1z9uXGYhN8ZEST95LiDcwAqjN6K8nsaDa?usp=share_link
+wget https://www.dropbox.com/s/ov2c2dhr2j2hfco/all_results.json?dl=0  -O ckpt/all_results.json
+wget https://www.dropbox.com/s/6ufwmh34mjkdhqv/config.json?dl=0 -O ckpt/config.json
+wget https://www.dropbox.com/s/w8l6awqvdrwt1xf/pytorch_model.bin?dl=0 -O ckpt/pytorch_model.bin
+wget https://www.dropbox.com/s/xzjocdfavbwk03y/special_tokens_map.json?dl=0 -O ckpt/special_tokens_map.json
+wget https://www.dropbox.com/s/vvr8aboeoyrn3ld/spiece.model?dl=0 -O ckpt/spiece.model
+wget https://www.dropbox.com/s/m8m36v8btptn25p/tokenizer_config.json?dl=0 -O ckpt/tokenizer_config.json
+wget https://www.dropbox.com/s/zlof9z4w8r681pg/tokenizer.json?dl=0 -O ckpt/tokenizer.json
+wget https://www.dropbox.com/s/9x3gh9eox7sjvmk/train_results.json?dl=0 -O ckpt/train_results.json
+wget https://www.dropbox.com/s/3n1wjcpt1igqofa/trainer_state.json?dl=0 -O ckpt/trainer_state.json
+wget https://www.dropbox.com/s/arca6wa0s2oz44x/training_args.bin?dl=0 -O ckpt/training_args.bin

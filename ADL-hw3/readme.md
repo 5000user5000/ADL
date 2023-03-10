@@ -35,7 +35,7 @@ run.sh 生成的資料預設是放在 path_of_output_dir/generated_predictions.t
 postprocess會做後處理把這txt轉成jsonl，預計放在 ./ans.jsonl (這裡位置和名稱可自行設定)
 strategy可以使用最優的num_beams=8或是不用,都會過baseline。
 順帶一題,run.sh是不用do_sample的參數的,當有使用top_p或top_k或temperature時就會設定成true。
-p.s. 最後發現要直接生成jsonl，也就是把轉jsonl的code納入總體中。
+p.s. 最後發現要直接生成jsonl，也就是把轉jsonl的code納入總體中。這部分是助教要求。
 
 
 # evaluate

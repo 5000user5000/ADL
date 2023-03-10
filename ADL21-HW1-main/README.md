@@ -55,3 +55,6 @@ python train_slot.py
 bash download.sh
 
 ```
+
+## 作業公布
+[Applied Deep Learning Homework 1 - Fall 111](https://docs.google.com/presentation/d/1X53LNiayg7md9nQ9qNP7H_cZRl6tTxqVg7UpZmys8kc/edit#slide=id.g8130877143_0_0)

@@ -53,3 +53,6 @@ bash download.sh
 
 ```
 注意,download模型之前,得先要有./ckpt/CS_pretrain 和./ckpt/QA_pretrain 等兩個資料夾,因為模型會下載到那裏,否則會出錯(原則上我的檔案夾應該已經放上這兩個空的資料夾)
+
+## 作業公告
+[Applied Deep Learning Homework 2 - Fall 111](https://docs.google.com/presentation/d/1oxNGMldwJrbnKR-_zvF9YscI5f8txaOKuOPYgqIA2Wo/edit#slide=id.g11f381a586b_10_0)

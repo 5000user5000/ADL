@@ -35,7 +35,7 @@ run.sh 生成的資料預設是放在 path_of_output_dir/generated_predictions.t
 postprocess會做後處理把這txt轉成jsonl，預計放在 ./ans.jsonl (這裡位置和名稱可自行設定)
 strategy可以使用最優的num_beams=8或是不用,都會過baseline。
 順帶一題,run.sh是不用do_sample的參數的,當有使用top_p或top_k或temperature時就會設定成true。
-
+p.s. 最後發現要直接生成jsonl，也就是把轉jsonl的code納入總體中。
 
 
 # evaluate
@@ -55,4 +55,7 @@ bash download.sh
 注意,如果檔案下載後, 跑run.sh出現沒有./ckpt/config.json之類的報錯,可以用ls ./ckpt確認,如果有混進'/r'之類的符號就sed -i 's/\r$//' download.sh後把ckpt裡的檔案刪掉(注意ckpt檔案夾要留著),再跑一次bash download.sh
 還有得先有空的ckpt檔案夾,原則上我應該有附在作業中,就不用再創一個。'/r'的錯誤應該也清過了。
 
-附註:本作業沒有plot figure的code,因為我是每500steps的ckpt讀取後tw_rouge計算一次,並把數據點用到excel上作圖。純手工。
+附註:本作業沒有plot figure的code,因為我是每500steps的ckpt讀取後tw_rouge計算一次,並把數據點用到excel上作圖。
+
+## 作業公告
+[ADL2022-HW3](https://docs.google.com/presentation/d/11pV5rM4-pxy7Aam5wZwaXHDNIuFEthdhlEXNXLDuWxc/edit#slide=id.p)
